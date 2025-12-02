@@ -51,7 +51,9 @@ module.exports = {
         ativo: true,
       });
 
-      return res.status(201).send(); // 201 = Created
+      return res.status(201).send({
+        message: "Usuário criado com sucesso",
+      }); // 201 = Created
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: "Erro ao criar usuário" });
@@ -109,7 +111,9 @@ module.exports = {
 
       await knex("usuarios").where({ id }).del();
 
-      return res.status(204).send(); // 204 = No Content
+      return res.status(204).send({
+        message: "Usuário deletado com sucesso",
+      }); // 204 = No Content
     } catch (error) {
       return res.status(500).json({ error: "Erro ao deletar usuário" });
     }
