@@ -9,6 +9,8 @@ const PostoControleController = require("./controllers/PostoControleController")
 const PessoaController = require("./controllers/PessoaController");
 const VeiculoController = require("./controllers/VeiculoController");
 const MovimentacaoAcessoController = require("./controllers/MovimentacaoAcessoController");
+const MovimentacaoFrotaController = require("./controllers/MovimentacaoFrotaController");
+const CidadeController = require("./controllers/CidadeController");
 
 // Rota Pública
 routes.post("/login", AuthController.login);
@@ -60,6 +62,23 @@ routes.post(
 routes.put(
   "/movimentacoes/acessos/saida/:id",
   MovimentacaoAcessoController.saida
+);
+
+// --- Cidades ---
+routes.get("/cidades", CidadeController.index);
+routes.post("/cidades", CidadeController.create);
+
+// --- Movimentações de Frota ---
+// Listar (aceita ?status=saiu)
+routes.get("/movimentacoes/frota", MovimentacaoFrotaController.index);
+
+// Saída para viagem (Início)
+routes.post("/movimentacoes/frota/saida", MovimentacaoFrotaController.saida);
+
+// Retorno de viagem (Fim)
+routes.put(
+  "/movimentacoes/frota/retorno/:id",
+  MovimentacaoFrotaController.retorno
 );
 
 // Rota de teste para ver quem está logado
