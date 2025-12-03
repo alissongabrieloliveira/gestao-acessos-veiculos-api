@@ -8,6 +8,7 @@ const SetorController = require("./controllers/SetorController");
 const PostoControleController = require("./controllers/PostoControleController");
 const PessoaController = require("./controllers/PessoaController");
 const VeiculoController = require("./controllers/VeiculoController");
+const MovimentacaoAcessoController = require("./controllers/MovimentacaoAcessoController");
 
 // Rota Pública
 routes.post("/login", AuthController.login);
@@ -45,6 +46,21 @@ routes.get("/veiculos", VeiculoController.index);
 routes.post("/veiculos", VeiculoController.create);
 routes.put("/veiculos/:id", VeiculoController.update);
 routes.delete("/veiculos/:id", VeiculoController.delete);
+
+// Listar (aceita ?status=patio)
+routes.get("/movimentacoes/acessos", MovimentacaoAcessoController.index);
+
+// Entrada (Check-in)
+routes.post(
+  "/movimentacoes/acessos/entrada",
+  MovimentacaoAcessoController.entrada
+);
+
+// Saída (Check-out)
+routes.put(
+  "/movimentacoes/acessos/saida/:id",
+  MovimentacaoAcessoController.saida
+);
 
 // Rota de teste para ver quem está logado
 routes.get("/me", (req, res) => {
