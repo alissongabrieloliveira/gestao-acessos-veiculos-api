@@ -6,6 +6,7 @@ const authMiddleware = require("./middlewares/authMiddleware");
 const UserController = require("./controllers/UserController");
 const SetorController = require("./controllers/SetorController");
 const PostoControleController = require("./controllers/PostoControleController");
+const PessoaController = require("./controllers/PessoaController");
 
 // Rota Pública
 routes.post("/login", AuthController.login);
@@ -30,6 +31,13 @@ routes.get("/postos", PostoControleController.index);
 routes.post("/postos", PostoControleController.create);
 routes.put("/postos/:id", PostoControleController.update);
 routes.delete("/postos/:id", PostoControleController.delete);
+
+// --- Pessoas ---
+routes.get("/pessoas", PessoaController.index);
+routes.post("/pessoas", PessoaController.create);
+routes.put("/pessoas/:id", PessoaController.update);
+routes.delete("/pessoas/:id", PessoaController.delete);
+routes.get("/pessoas/tipos", PessoaController.getTypes);
 
 // Rota de teste para ver quem está logado
 routes.get("/me", (req, res) => {
