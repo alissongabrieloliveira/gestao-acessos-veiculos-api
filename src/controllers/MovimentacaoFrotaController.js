@@ -36,6 +36,57 @@ module.exports = {
     }
   },
 
+  // LISTAR (Com filtros de data)
+  async index(req, res) {
+    try {
+      const { status, data_inicio, data_fim } = req.query;
+
+      const query = knex("movimentacoes_frota")
+        .join("pessoas", "movimentacoes_frota.id_pessoa", "=", "pessoas.id")
+        .join("veiculos", "movimentacoes_frota.id_veiculo", "=", "veiculos.id")
+        .leftJoin(
+          "cidades",
+          "movimentacoes_frota.id_cidade_de_destino",
+          "=",
+          "cidades.id"
+        )
+        .select(
+          "movimentacoes_frota.*",
+          "pessoas.nome as motorista_nome",
+          "veiculos.placa",
+          "veiculos.modelo",
+          "cidades.nome as cidade_destino",
+          "cidades.uf as cidade_uf"
+        )
+        .orderBy("movimentacoes_frota.data_hora_entrada", "desc");
+
+      if (status) {
+        query.where("movimentacoes_frota.status", status);
+      }
+
+      // Filtro de Data
+      if (data_inicio) {
+        query.where(
+          "movimentacoes_frota.data_hora_entrada",
+          ">=",
+          `${data_inicio} 00:00:00`
+        );
+      }
+      if (data_fim) {
+        query.where(
+          "movimentacoes_frota.data_hora_entrada",
+          "<=",
+          `${data_fim} 23:59:59`
+        );
+      }
+
+      const movimentacoes = await query;
+      return res.json(movimentacoes);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao listar frota." });
+    }
+  },
+
   // SAÍDA DE VEÍCULO (Início da Viagem)
   async saida(req, res) {
     const {

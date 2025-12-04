@@ -56,6 +56,77 @@ module.exports = {
     }
   },
 
+  // LISTAR (Com filtros de data)
+  async index(req, res) {
+    try {
+      const { status, data_inicio, data_fim } = req.query;
+
+      const query = knex("movimentacoes_acessos")
+        .join("pessoas", "movimentacoes_acessos.id_pessoa", "=", "pessoas.id")
+        .leftJoin(
+          "veiculos",
+          "movimentacoes_acessos.id_veiculo",
+          "=",
+          "veiculos.id"
+        )
+        .join(
+          "setores",
+          "movimentacoes_acessos.id_setor_visitado",
+          "=",
+          "setores.id"
+        )
+        .join(
+          "postos_controle as posto_ent",
+          "movimentacoes_acessos.id_posto_controle_entrada",
+          "=",
+          "posto_ent.id"
+        )
+        .leftJoin(
+          "postos_controle as posto_sai",
+          "movimentacoes_acessos.id_posto_controle_saida",
+          "=",
+          "posto_sai.id"
+        )
+        .select(
+          "movimentacoes_acessos.*",
+          "pessoas.nome as pessoa_nome",
+          "pessoas.documento as pessoa_documento",
+          "veiculos.placa as veiculo_placa",
+          "veiculos.modelo as veiculo_modelo",
+          "setores.nome as setor_nome",
+          "posto_ent.nome as posto_entrada_nome",
+          "posto_sai.nome as posto_saida_nome"
+        )
+        .orderBy("movimentacoes_acessos.data_hora_entrada", "desc");
+
+      if (status) {
+        query.where("movimentacoes_acessos.status", status);
+      }
+
+      // Filtro de Data
+      if (data_inicio) {
+        query.where(
+          "movimentacoes_acessos.data_hora_entrada",
+          ">=",
+          `${data_inicio} 00:00:00`
+        );
+      }
+      if (data_fim) {
+        query.where(
+          "movimentacoes_acessos.data_hora_entrada",
+          "<=",
+          `${data_fim} 23:59:59`
+        );
+      }
+
+      const movimentacoes = await query;
+      return res.json(movimentacoes);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Erro ao listar movimentações." });
+    }
+  },
+
   // REGISTRAR ENTRADA
   async entrada(req, res) {
     const {
