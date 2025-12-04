@@ -11,6 +11,7 @@ const VeiculoController = require("./controllers/VeiculoController");
 const MovimentacaoAcessoController = require("./controllers/MovimentacaoAcessoController");
 const MovimentacaoFrotaController = require("./controllers/MovimentacaoFrotaController");
 const CidadeController = require("./controllers/CidadeController");
+const DashboardController = require("./controllers/DashboardController");
 
 // Rota Pública
 routes.post("/login", AuthController.login);
@@ -80,6 +81,9 @@ routes.put(
   "/movimentacoes/frota/retorno/:id",
   MovimentacaoFrotaController.retorno
 );
+
+// --- Dashboard ---
+routes.get("/dashboard/resumo", DashboardController.resumo);
 
 // Rota de teste para ver quem está logado
 routes.get("/me", (req, res) => {
