@@ -48,6 +48,9 @@ module.exports = {
             .select(
               "movimentacoes_acessos.id",
               "movimentacoes_acessos.data_hora_entrada",
+              "movimentacoes_acessos.data_hora_saida",
+              "movimentacoes_acessos.km_entrada",
+              "movimentacoes_acessos.km_saida",
               "movimentacoes_acessos.status",
               "pessoas.nome as pessoa_nome",
               "veiculos.modelo as veiculo_modelo",
