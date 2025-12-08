@@ -56,10 +56,11 @@ module.exports = {
     }
   },
 
-  // LISTAR (Com filtros de data)
+  // LISTAR (Com filtros de data, nome e placa)
   async index(req, res) {
     try {
-      const { status, data_inicio, data_fim } = req.query;
+      // Novos parâmetros: nome e placa
+      const { status, data_inicio, data_fim, nome, placa } = req.query;
 
       const query = knex("movimentacoes_acessos")
         .join("pessoas", "movimentacoes_acessos.id_pessoa", "=", "pessoas.id")
@@ -103,7 +104,7 @@ module.exports = {
         query.where("movimentacoes_acessos.status", status);
       }
 
-      // Filtro de Data
+      // Filtros de Data
       if (data_inicio) {
         query.where(
           "movimentacoes_acessos.data_hora_entrada",
@@ -117,6 +118,17 @@ module.exports = {
           "<=",
           `${data_fim} 23:59:59`
         );
+      }
+
+      // --- Novos filtros ---
+      // Filtro por Nome da Pessoa (Parcial e Case Insensitive)
+      if (nome) {
+        query.where("pessoas.nome", "ilike", `%${nome}%`);
+      }
+
+      // Filtro por Placa (Parcial e Case Insensitive)
+      if (placa) {
+        query.where("veiculos.placa", "ilike", `%${placa}%`);
       }
 
       const movimentacoes = await query;
