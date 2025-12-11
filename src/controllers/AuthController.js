@@ -31,7 +31,7 @@ module.exports = {
       const token = jwt.sign(
         { id: user.id, nome: user.nome, tipo: user.tipo_de_usuario },
         process.env.JWT_SECRET,
-        { expiresIn: "1d" } // Token expira em 1 dia
+        { expiresIn: "1d" }
       );
 
       // Retornar dados do usuário (menos a senha) e o token
@@ -40,7 +40,7 @@ module.exports = {
           id: user.id,
           nome: user.nome,
           email: user.email,
-          tipo: user.tipo_de_usuario,
+          tipo_de_usuario: user.tipo_de_usuario,
         },
         token,
       });
