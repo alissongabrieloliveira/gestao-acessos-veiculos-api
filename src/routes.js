@@ -50,19 +50,25 @@ routes.post("/veiculos", VeiculoController.create);
 routes.put("/veiculos/:id", VeiculoController.update);
 routes.delete("/veiculos/:id", VeiculoController.delete);
 
+// --- Movimentações de Acessos ---
 // Listar (aceita ?status=patio)
 routes.get("/movimentacoes/acessos", MovimentacaoAcessoController.index);
-
 // Entrada (Check-in)
 routes.post(
   "/movimentacoes/acessos/entrada",
   MovimentacaoAcessoController.entrada
 );
-
 // Saída (Check-out)
 routes.put(
   "/movimentacoes/acessos/saida/:id",
   MovimentacaoAcessoController.saida
+);
+// Edição completa
+routes.put("/movimentacoes/acessos/:id", MovimentacaoAcessoController.update);
+// Exclusão
+routes.delete(
+  "/movimentacoes/acessos/:id",
+  MovimentacaoAcessoController.delete
 );
 
 // --- Cidades ---
@@ -72,15 +78,17 @@ routes.post("/cidades", CidadeController.create);
 // --- Movimentações de Frota ---
 // Listar (aceita ?status=saiu)
 routes.get("/movimentacoes/frota", MovimentacaoFrotaController.index);
-
 // Saída para viagem (Início)
 routes.post("/movimentacoes/frota/saida", MovimentacaoFrotaController.saida);
-
 // Retorno de viagem (Fim)
 routes.put(
   "/movimentacoes/frota/retorno/:id",
   MovimentacaoFrotaController.retorno
 );
+// Edição completa
+routes.put("/movimentacoes/frota/:id", MovimentacaoFrotaController.update);
+// Exclusão
+routes.delete("/movimentacoes/frota/:id", MovimentacaoFrotaController.delete);
 
 // --- Dashboard ---
 routes.get("/dashboard/resumo", DashboardController.resumo);

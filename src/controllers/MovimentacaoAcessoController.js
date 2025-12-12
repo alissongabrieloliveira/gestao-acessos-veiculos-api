@@ -247,4 +247,70 @@ module.exports = {
       return res.status(500).json({ error: "Erro ao registrar saída." });
     }
   },
+
+  // EDIÇÃO COMPLETA (ADMIN)
+  async update(req, res) {
+    const { id } = req.params;
+    const {
+      id_pessoa,
+      id_veiculo,
+      id_setor_visitado,
+      id_posto_controle_entrada,
+      id_posto_controle_saida,
+      km_entrada,
+      km_saida,
+      motivo_da_visita,
+      observacao,
+    } = req.body;
+
+    // Apenas Admin pode fazer isso (validaremos na rota ou aqui)
+    if (req.userType !== "admin") {
+      return res
+        .status(403)
+        .json({ error: "Apenas administradores podem editar movimentações." });
+    }
+
+    try {
+      await knex("movimentacoes_acessos")
+        .where({ id })
+        .update({
+          id_pessoa,
+          id_veiculo: id_veiculo || null,
+          id_setor_visitado,
+          id_posto_controle_entrada,
+          id_posto_controle_saida: id_posto_controle_saida || null,
+          km_entrada: km_entrada || null,
+          km_saida: km_saida || null,
+          motivo_da_visita,
+          observacao,
+          // Se tiver posto de saída, o status é 'saiu', senão 'patio'
+          status: id_posto_controle_saida ? "saiu" : "patio",
+          // Atualiza data de saída se foi fechado agora (opcional, mas bom manter coerência)
+          data_hora_saida: id_posto_controle_saida
+            ? knex.raw("COALESCE(data_hora_saida, NOW())")
+            : null,
+        });
+
+      return res.send();
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Erro ao atualizar movimentação." });
+    }
+  },
+
+  // EXCLUSÃO (ADMIN)
+  async delete(req, res) {
+    const { id } = req.params;
+
+    if (req.userType !== "admin") {
+      return res.status(403).json({ error: "Sem permissão." });
+    }
+
+    try {
+      await knex("movimentacoes_acessos").where({ id }).del();
+      return res.status(204).send();
+    } catch (error) {
+      return res.status(500).json({ error: "Erro ao excluir registro." });
+    }
+  },
 };
