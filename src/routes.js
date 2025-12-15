@@ -15,6 +15,7 @@ const DashboardController = require("./controllers/DashboardController");
 
 // Rota Pública
 routes.post("/login", AuthController.login);
+routes.post("/register", UserController.publicRegister);
 
 // --- A partir daqui, todas as rotas exigem Login ---
 routes.use(authMiddleware);

@@ -2,6 +2,40 @@ const knex = require("../database/connection");
 const bcrypt = require("bcryptjs");
 
 module.exports = {
+  // CADASTRO PÚBLICO (Auto-registro)
+  async publicRegister(req, res) {
+    const { nome, email, senha } = req.body;
+
+    if (!nome || !email || !senha) {
+      return res.status(400).json({ error: "Preencha todos os campos." });
+    }
+
+    try {
+      // 1. Verifica se email já existe
+      const userExists = await knex("usuarios").where({ email }).first();
+      if (userExists) {
+        return res.status(400).json({ error: "Este e-mail já está em uso." });
+      }
+
+      // 2. Criptografa a senha
+      const passwordHash = await bcrypt.hash(senha, 8);
+
+      // 3. Cria usuário FORÇANDO 'operador' e 'ativo: false'
+      await knex("usuarios").insert({
+        nome,
+        email,
+        senha_hash: passwordHash,
+        tipo_de_usuario: "operador", // Padrão
+        ativo: false, // Padrão (Requer aprovação)
+      });
+
+      return res.status(201).send();
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Erro ao realizar cadastro." });
+    }
+  },
+
   // LISTAR TODOS OS USUÁRIOS
   async index(req, res) {
     try {
