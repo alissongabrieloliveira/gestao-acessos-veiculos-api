@@ -1,10 +1,12 @@
 // server/knexfile.js
+const path = require("path");
 require("dotenv").config();
 
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
 module.exports = {
+  // Configuração Local
   development: {
     client: "pg",
     connection: {
@@ -18,6 +20,20 @@ module.exports = {
     },
     seeds: {
       directory: "./src/database/seeds",
+    },
+    useNullAsDefault: true,
+  },
+
+  // Configuração de Produção
+  production: {
+    client: "pg",
+    // URL completa do banco nesta variável
+    connection: {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }, // Obrigatório para Supabase/Heroku/Render
+    },
+    migrations: {
+      directory: path.resolve(__dirname, "src", "database", "migrations"),
     },
     useNullAsDefault: true,
   },
