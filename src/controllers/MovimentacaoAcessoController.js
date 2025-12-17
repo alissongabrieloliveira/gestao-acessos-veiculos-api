@@ -261,9 +261,16 @@ module.exports = {
       km_saida,
       motivo_da_visita,
       observacao,
+      data_hora_entrada,
+      data_hora_saida,
     } = req.body;
 
-    // Apenas Admin pode fazer isso (validaremos na rota ou aqui)
+    // 1. Função auxiliar de segurança
+    const parseKm = (valor) => {
+      if (valor === "" || valor === null || valor === undefined) return null;
+      return Number(valor);
+    };
+
     if (req.userType !== "admin") {
       return res
         .status(403)
@@ -271,29 +278,45 @@ module.exports = {
     }
 
     try {
+      // Log para debug (Railway/Terminal)
+      console.log("Editando Acesso ID:", id);
+      console.log("Recebido KM Entrada:", km_entrada, "| KM Saída:", km_saida);
+
+      const dadosParaAtualizar = {
+        id_pessoa,
+        id_veiculo: id_veiculo || null,
+        id_setor_visitado,
+        id_posto_controle_entrada,
+        id_posto_controle_saida: id_posto_controle_saida || null,
+
+        // Processa os KMs antes de montar o objeto de atualização
+        km_entrada: parseKm(km_entrada),
+        km_saida: parseKm(km_saida),
+
+        motivo_da_visita,
+        observacao,
+        status: id_posto_controle_saida ? "saiu" : "patio",
+        data_hora_entrada,
+      };
+
+      // Lógica da Data de Saída
+      if (data_hora_saida) {
+        dadosParaAtualizar.data_hora_saida = data_hora_saida;
+      } else if (id_posto_controle_saida) {
+        dadosParaAtualizar.data_hora_saida = knex.raw(
+          "COALESCE(data_hora_saida, NOW())"
+        );
+      } else {
+        dadosParaAtualizar.data_hora_saida = null;
+      }
+
       await knex("movimentacoes_acessos")
         .where({ id })
-        .update({
-          id_pessoa,
-          id_veiculo: id_veiculo || null,
-          id_setor_visitado,
-          id_posto_controle_entrada,
-          id_posto_controle_saida: id_posto_controle_saida || null,
-          km_entrada: km_entrada || null,
-          km_saida: km_saida || null,
-          motivo_da_visita,
-          observacao,
-          // Se tiver posto de saída, o status é 'saiu', senão 'patio'
-          status: id_posto_controle_saida ? "saiu" : "patio",
-          // Atualiza data de saída se foi fechado agora (opcional, mas bom manter coerência)
-          data_hora_saida: id_posto_controle_saida
-            ? knex.raw("COALESCE(data_hora_saida, NOW())")
-            : null,
-        });
+        .update(dadosParaAtualizar);
 
       return res.send();
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao atualizar:", error);
       return res.status(500).json({ error: "Erro ao atualizar movimentação." });
     }
   },

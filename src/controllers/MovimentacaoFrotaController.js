@@ -224,44 +224,74 @@ module.exports = {
   async update(req, res) {
     const { id } = req.params;
     const {
-      id_pessoa, // Motorista
+      id_pessoa,
       id_veiculo,
       id_cidade_de_destino,
-      id_posto_controle_entrada, // Posto Saída (início)
-      id_posto_controle_saida, // Posto Chegada (fim)
-      km_entrada, // KM Saída
-      km_saida, // KM Chegada
+      id_posto_controle_entrada,
+      id_posto_controle_saida,
+      km_entrada,
+      km_saida,
       motivo_saida,
       observacao,
+      data_hora_entrada,
+      data_hora_saida,
     } = req.body;
+
+    // 1. Função auxiliar de segurança
+    const parseKm = (valor) => {
+      if (valor === "" || valor === null || valor === undefined) return null;
+      return Number(valor);
+    };
 
     if (req.userType !== "admin")
       return res.status(403).json({ error: "Sem permissão." });
 
     try {
-      await knex("movimentacoes_frota")
-        .where({ id })
-        .update({
-          id_pessoa,
-          id_veiculo,
-          id_cidade_de_destino,
-          id_posto_controle_entrada,
-          id_posto_controle_saida: id_posto_controle_saida || null,
-          km_entrada,
-          km_saida: km_saida || null,
-          motivo_saida,
-          observacao,
-          status: km_saida ? "patio" : "saiu", // Se tem KM de volta, tá no pátio
-          data_hora_saida: km_saida
-            ? knex.raw("COALESCE(data_hora_saida, NOW())")
-            : null,
-        });
+      // Processa os KMs antes de montar o objeto de atualização
+      const finalKmEntrada = parseKm(km_entrada);
+      const finalKmSaida = parseKm(km_saida);
+
+      const dadosUpdate = {
+        id_pessoa,
+        id_veiculo,
+        id_cidade_de_destino,
+        id_posto_controle_entrada,
+        id_posto_controle_saida: id_posto_controle_saida || null,
+
+        km_entrada: finalKmEntrada,
+        km_saida: finalKmSaida,
+
+        motivo_saida,
+        observacao,
+        data_hora_entrada,
+
+        // A lógica do status usa o valor já tratado
+        status: finalKmSaida || data_hora_saida ? "patio" : "saiu",
+      };
+
+      // Lógica da Data de Retorno
+      if (data_hora_saida) {
+        dadosUpdate.data_hora_saida = data_hora_saida;
+      } else if (finalKmSaida) {
+        // Se tem KM de volta mas não tem data, assume AGORA
+        dadosUpdate.data_hora_saida = knex.raw(
+          "COALESCE(data_hora_saida, NOW())"
+        );
+      } else {
+        // Se tirou o KM e a data, reabre a viagem
+        dadosUpdate.data_hora_saida = null;
+      }
+
+      await knex("movimentacoes_frota").where({ id }).update(dadosUpdate);
+
       return res.send();
     } catch (error) {
+      console.error("Erro Frota Update:", error);
       return res.status(500).json({ error: "Erro ao atualizar frota." });
     }
   },
 
+  // EXCLUSÃO (ADMIN)
   async delete(req, res) {
     const { id } = req.params;
     if (req.userType !== "admin")
